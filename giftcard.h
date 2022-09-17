@@ -5,6 +5,8 @@
  * Comments added by: Justin Cappos (JAC)
  * Modification Date: 8 July 2020
  */
+ 
+ // Akash Jauhar
 
 // The purpose of this app is to read in gift card data.  The format of a gift 
 // card looks like this:
