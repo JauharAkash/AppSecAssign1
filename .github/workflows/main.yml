@@ -2,7 +2,7 @@ name: github-actions
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
       - run: gcc -o giftcardwriter_crash1 giftcardwriter_crash1.c && ./giftcardwriter_crash1
