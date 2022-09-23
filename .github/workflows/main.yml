@@ -5,5 +5,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: make giftcardwriter
+      - run: make giftcardwriter_crash1
+      - run: make giftcardwriter_crash2
       - run: make giftcardreader
