@@ -1,6 +1,7 @@
-giftcardreader:
+giftcardreader: giftcardreader.c
 	gcc -o giftcardreader giftcardreader.c && ./giftcardreader 1 crash1.gft
 	gcc -o giftcardreader giftcardreader.c && ./giftcardreader 1 crash2.gft
+	gcc -o giftcardreader giftcardreader.c && ./giftcardreader 1 hang.gft
 
 
 giftcardexamplewriter:

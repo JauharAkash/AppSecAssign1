@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <strings.h>
+#include <string.h>
 
 // interpreter for THX-1138 assembly
 void animate(char *msg, unsigned char *program) {
@@ -53,7 +54,7 @@ void animate(char *msg, unsigned char *program) {
             case 0x08:
                 goto done;
             case 0x09:
-                pc += (char)arg1;
+                pc += (unsigned char)arg1; //fixed hang.gft
                 break;
             case 0x10:
                 if (zf) pc += (char)arg1;
@@ -180,10 +181,17 @@ struct this_gift_card *gift_card_reader(FILE *input_fd) {
 
 	// Loop to do the whole file
 	while (!feof(input_fd)) {
-
+		
+		
 		struct gift_card_data *gcd_ptr;
 		/* JAC: Why aren't return types checked? */
 		fread(&ret_val->num_bytes, 4,1, input_fd);
+		
+		if (ret_val->num_bytes<0){ //if statement to fix crash2.gft
+		printf("Not valid, please enter a valid byte value");
+		printf("\n");
+		exit(0);
+		}
 
 		// Make something the size of the rest and read it in
 		ptr = malloc(ret_val->num_bytes);
@@ -261,10 +269,16 @@ struct this_gift_card *thisone;
 
 int main(int argc, char **argv) {
     // BDG: no argument checking?
+    	
 	FILE *input_fd = fopen(argv[2],"r");
+	
 	thisone = gift_card_reader(input_fd);
 	if (argv[1][0] == '1') print_gift_card_info(thisone);
-    else if (argv[1][0] == '2') gift_card_json(thisone);
-
+   	 else if (argv[1][0] == '2') gift_card_json(thisone);
+	
 	return 0;
 }
+
+
+
+

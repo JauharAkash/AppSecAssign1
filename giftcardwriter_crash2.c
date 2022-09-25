@@ -5,6 +5,8 @@
  * Comments added by Justin Cappos (JAC)
  * Modification Date: 8 July 2020
  */
+ 
+ // Akash Jauhar
 
 #include <stdio.h>
 #include "giftcard.h"
@@ -22,7 +24,7 @@ struct gift_card_amount_change examplegcac;
 //  (JAC: This is so wrong.  Global variable use / initialization is a 
 //  terrible thing to do.)
 void setupgc() {
-	examplegc.num_bytes = -116;
+	examplegc.num_bytes = -116; // Changing the num_bytes from 116 to -116. Memory allocation will crash here!
 	examplegc.gift_card_data = (void *) &examplegcd;
 	examplegcd.merchant_id = "GiftCardsz.com                  ";
 	examplegcd.customer_id = "DuaneGreenes Store 1451         ";
