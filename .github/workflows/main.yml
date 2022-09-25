@@ -7,4 +7,5 @@ jobs:
       - uses: actions/checkout@v2
       - run: make giftcardwriter_crash1
       - run: make giftcardwriter_crash2
+      - run: make giftcardwriter_hang
       - run: make giftcardreader
