@@ -12,4 +12,6 @@ giftcardwriter_crash1:
 
 giftcardwriter_crash2:
 	gcc -o giftcardwriter_crash2 giftcardwriter_crash2.c && ./giftcardwriter_crash2
+giftcardwriter_hang:
+	gcc -o giftcardwriter_hang giftcardwriter_hang.c && ./giftcardwriter_hang
 

@@ -1,0 +1,295 @@
+        -:    0:Source:giftcardreader.c
+        -:    0:Graph:giftcardreader.gcno
+        -:    0:Data:giftcardreader.gcda
+        -:    0:Runs:15
+        -:    1:/*
+        -:    2: * Gift Card Reading Application
+        -:    3: * Original Author: Shoddycorp's Cut-Rate Contracting
+        -:    4: * Comments added by: Justin Cappos (JAC) and Brendan Dolan-Gavitt (BDG)
+        -:    5: * Maintainer:
+        -:    6: * Date: 8 July 2020
+        -:    7: */
+        -:    8:
+        -:    9:
+        -:   10:#include "giftcard.h"
+        -:   11:
+        -:   12:#include <stdio.h>
+        -:   13:#include <strings.h>
+        -:   14:#include <string.h>
+        -:   15:
+        -:   16:// interpreter for THX-1138 assembly
+        1:   17:void animate(char *msg, unsigned char *program) {
+        -:   18:    unsigned char regs[16];
+        1:   19:    char *mptr = msg;
+        1:   20:    unsigned char *pc = program;
+        1:   21:    int i = 0;
+        1:   22:    int zf = 0;
+       12:   23:    while (1) {
+        -:   24:        unsigned char op, arg1, arg2;
+       13:   25:        op = *pc;
+       13:   26:        arg1 = *(pc+1);
+       13:   27:        arg2 = *(pc+2);
+       13:   28:        switch (*pc) {
+       10:   29:            case 0x00:
+       10:   30:                break;
+    #####:   31:            case 0x01:
+    #####:   32:                regs[arg1] = *mptr;
+    #####:   33:                break;
+    #####:   34:            case 0x02:
+    #####:   35:                *mptr = regs[arg1];
+    #####:   36:                break;
+    #####:   37:            case 0x03:
+    #####:   38:                mptr += (char)arg1;
+    #####:   39:                break;
+    #####:   40:            case 0x04:
+    #####:   41:                regs[arg2] = arg1;
+    #####:   42:                break;
+    #####:   43:            case 0x05:
+    #####:   44:                regs[arg1] ^= regs[arg2];
+    #####:   45:                zf = !regs[arg1];
+    #####:   46:                break;
+    #####:   47:            case 0x06:
+    #####:   48:                regs[arg1] += regs[arg2];
+    #####:   49:                zf = !regs[arg1];
+    #####:   50:                break;
+    #####:   51:            case 0x07:
+    #####:   52:                puts(msg);
+    #####:   53:                break;
+    #####:   54:            case 0x08:
+    #####:   55:                goto done;
+        1:   56:            case 0x09:
+        -:   57:            //Hang
+        1:   58:                pc += (unsigned char)arg1; //Fixed hang.gft
+        1:   59:                break;
+    #####:   60:            case 0x10:
+    #####:   61:                if (zf) pc += (char)arg1;
+    #####:   62:                break;
+        -:   63:        }
+       13:   64:        pc+=3;
+       13:   65:        if (pc > program+256) break;
+        -:   66:    }
+        1:   67:done:
+        1:   68:    return;
+        -:   69:}
+        -:   70:
+       10:   71:void print_gift_card_info(struct this_gift_card *thisone) {
+        -:   72:	struct gift_card_data *gcd_ptr;
+        -:   73:	struct gift_card_record_data *gcrd_ptr;
+        -:   74:	struct gift_card_amount_change *gcac_ptr;
+        -:   75:    struct gift_card_program *gcp_ptr;
+        -:   76:
+       10:   77:	gcd_ptr = thisone->gift_card_data;
+       10:   78:	printf("   Merchant ID: %32.32s\n",gcd_ptr->merchant_id);
+       10:   79:	printf("   Customer ID: %32.32s\n",gcd_ptr->customer_id);
+       10:   80:	printf("   Num records: %d\n",gcd_ptr->number_of_gift_card_records);
+        -:   81:	
+        -:   82:	
+       15:   83:	for(int i=0;i<gcd_ptr->number_of_gift_card_records; i++) {
+        -:   84:	
+        5:   85:  		gcrd_ptr = (struct gift_card_record_data *) gcd_ptr->gift_card_record_data[i];
+        5:   86:		if (gcrd_ptr->type_of_record == 1) {
+        3:   87:			printf("      record_type: amount_change\n");
+        3:   88:			gcac_ptr = gcrd_ptr->actual_record;
+        3:   89:			printf("      amount_added: %d\n",gcac_ptr->amount_added);
+        3:   90:			if (gcac_ptr->amount_added>0) {
+        3:   91:				printf("      signature: %32.32s\n",gcac_ptr->actual_signature);
+        -:   92:			}
+        -:   93:		}	
+        2:   94:		else if (gcrd_ptr->type_of_record == 2) {
+        1:   95:			printf("      record_type: message\n");
+        1:   96:			printf("      message: %s\n",(char *)gcrd_ptr->actual_record);
+        -:   97:		}
+        1:   98:		else if (gcrd_ptr->type_of_record == 3) {
+        1:   99:            gcp_ptr = gcrd_ptr->actual_record;
+        1:  100:			printf("      record_type: animated message\n");
+        1:  101:            printf("      message: %s\n", gcp_ptr->message);
+        1:  102:            printf("  [running embedded program]  \n");
+        1:  103:            animate(gcp_ptr->message, gcp_ptr->program);
+        -:  104:		}
+        -:  105:	}
+       10:  106:	printf("  Total value: %d\n\n",get_gift_card_value(thisone));
+       10:  107:}
+        -:  108:
+        -:  109:// Added to support web functionalities
+    #####:  110:void gift_card_json(struct this_gift_card *thisone) {
+        -:  111:    struct gift_card_data *gcd_ptr;
+        -:  112:    struct gift_card_record_data *gcrd_ptr;
+        -:  113:    struct gift_card_amount_change *gcac_ptr;
+    #####:  114:    gcd_ptr = thisone->gift_card_data;
+    #####:  115:    printf("{\n");
+    #####:  116:    printf("  \"merchant_id\": \"%32.32s\",\n", gcd_ptr->merchant_id);
+    #####:  117:    printf("  \"customer_id\": \"%32.32s\",\n", gcd_ptr->customer_id);
+    #####:  118:    printf("  \"total_value\": %d,\n", get_gift_card_value(thisone));
+    #####:  119:    printf("  \"records\": [\n");
+    #####:  120:	for(int i=0;i<gcd_ptr->number_of_gift_card_records; i++) {
+    #####:  121:        gcrd_ptr = (struct gift_card_record_data *) gcd_ptr->gift_card_record_data[i];
+    #####:  122:        printf("    {\n");
+    #####:  123:        if (gcrd_ptr->type_of_record == 1) {
+    #####:  124:            printf("      \"record_type\": \"amount_change\",\n");
+    #####:  125:            gcac_ptr = gcrd_ptr->actual_record;
+    #####:  126:            printf("      \"amount_added\": %d,\n",gcac_ptr->amount_added);
+    #####:  127:            if (gcac_ptr->amount_added>0) {
+    #####:  128:                printf("      \"signature\": \"%32.32s\"\n",gcac_ptr->actual_signature);
+        -:  129:            }
+        -:  130:        }
+    #####:  131:        else if (gcrd_ptr->type_of_record == 2) {
+    #####:  132:			printf("      \"record_type\": \"message\",\n");
+    #####:  133:			printf("      \"message\": \"%s\"\n",(char *)gcrd_ptr->actual_record);
+        -:  134:        }
+    #####:  135:        else if (gcrd_ptr->type_of_record == 3) {
+    #####:  136:            struct gift_card_program *gcp = gcrd_ptr->actual_record;
+    #####:  137:			printf("      \"record_type\": \"animated message\",\n");
+    #####:  138:			printf("      \"message\": \"%s\",\n",gcp->message);
+        -:  139:            // programs are binary so we will hex for the json
+    #####:  140:            char *hexchars = "01234567890abcdef";
+        -:  141:            char program_hex[512+1];
+    #####:  142:            program_hex[512] = '\0';
+        -:  143:            int i;
+    #####:  144:            for(i = 0; i < 256; i++) {
+    #####:  145:                program_hex[i*2] = hexchars[((gcp->program[i] & 0xf0) >> 4)];
+    #####:  146:                program_hex[i*2+1] = hexchars[(gcp->program[i] & 0x0f)];
+        -:  147:            }
+    #####:  148:			printf("      \"program\": \"%s\"\n",program_hex);
+        -:  149:        }
+    #####:  150:        if (i < gcd_ptr->number_of_gift_card_records-1)
+    #####:  151:            printf("    },\n");
+        -:  152:        else
+    #####:  153:            printf("    }\n");
+        -:  154:    }
+    #####:  155:    printf("  ]\n");
+    #####:  156:    printf("}\n");
+    #####:  157:}
+        -:  158:
+       10:  159:int get_gift_card_value(struct this_gift_card *thisone) {
+        -:  160:	struct gift_card_data *gcd_ptr;
+        -:  161:	struct gift_card_record_data *gcrd_ptr;
+        -:  162:	struct gift_card_amount_change *gcac_ptr;
+       10:  163:	int ret_count = 0;
+        -:  164:
+       10:  165:	gcd_ptr = thisone->gift_card_data;
+       15:  166:	for(int i=0;i<gcd_ptr->number_of_gift_card_records; i++) {
+        5:  167:  		gcrd_ptr = (struct gift_card_record_data *) gcd_ptr->gift_card_record_data[i];
+        5:  168:		if (gcrd_ptr->type_of_record == 1) {
+        3:  169:			gcac_ptr = gcrd_ptr->actual_record;
+        3:  170:			ret_count += gcac_ptr->amount_added;
+        -:  171:		}	
+        -:  172:	}
+       10:  173:	return ret_count;
+        -:  174:}
+        -:  175:
+        -:  176:
+        -:  177:
+        -:  178:/* JAC: input_fd is misleading... It's a FILE type, not a fd */
+       15:  179:struct this_gift_card *gift_card_reader(FILE *input_fd) {
+        -:  180:
+       15:  181:	struct this_gift_card *ret_val = malloc(sizeof(struct this_gift_card));
+        -:  182:
+        -:  183:    void *optr;
+        -:  184:	void *ptr;
+        -:  185:
+        -:  186:	// Loop to do the whole file
+       33:  187:	while (!feof(input_fd)) {
+        -:  188:
+        -:  189:		struct gift_card_data *gcd_ptr;
+        -:  190:		/* JAC: Why aren't return types checked? */
+       23:  191:		fread(&ret_val->num_bytes, 4,1, input_fd);
+        -:  192:		//Crash 1 & 2
+       23:  193:		if (ret_val->num_bytes<0){ //if statement to fix the crashes
+        5:  194:		printf("Not valid, please enter a valid byte value in the giftcardwriter.c");
+        5:  195:		printf("\n");
+        5:  196:		exit(0);
+        -:  197:		}
+        -:  198:
+        -:  199:		// Make something the size of the rest and read it in
+       18:  200:		ptr = malloc(ret_val->num_bytes);
+       18:  201:		fread(ptr, ret_val->num_bytes, 1, input_fd);
+        -:  202:
+       18:  203:        optr = ptr-4;
+        -:  204:
+       18:  205:		gcd_ptr = ret_val->gift_card_data = malloc(sizeof(struct gift_card_data));
+       18:  206:		gcd_ptr->merchant_id = ptr;
+       18:  207:		ptr += 32;	
+        -:  208://		printf("VD: %d\n",(int)ptr - (int) gcd_ptr->merchant_id);
+       18:  209:		gcd_ptr->customer_id = ptr;
+       18:  210:		ptr += 32;	
+        -:  211:		/* JAC: Something seems off here... */
+       18:  212:		gcd_ptr->number_of_gift_card_records = *((char *)ptr);
+       18:  213:		ptr += 4;
+        -:  214:
+       18:  215:		gcd_ptr->gift_card_record_data = (void *)malloc(gcd_ptr->number_of_gift_card_records*sizeof(void*));
+        -:  216:		
+        -:  217:
+        -:  218:		// Now ptr points at the gift card recrod data
+       49:  219:		for (int i=0; i<=gcd_ptr->number_of_gift_card_records; i++){
+        -:  220:		
+        -:  221:			//printf("i: %d\n",i);
+        -:  222:			struct gift_card_record_data *gcrd_ptr;
+       31:  223:			gcrd_ptr = gcd_ptr->gift_card_record_data[i] = malloc(sizeof(struct gift_card_record_data));
+        -:  224:			struct gift_card_amount_change *gcac_ptr;
+       31:  225:			gcac_ptr = gcrd_ptr->actual_record = malloc(sizeof(struct gift_card_record_data));
+        -:  226:            struct gift_card_program *gcp_ptr;
+       31:  227:			gcp_ptr = malloc(sizeof(struct gift_card_program));
+        -:  228:
+       31:  229:			gcrd_ptr->record_size_in_bytes = *((char *)ptr);
+        -:  230:            //printf("rec at %x, %d bytes\n", ptr - optr, gcrd_ptr->record_size_in_bytes); 
+       31:  231:			ptr += 4;	
+        -:  232:			//printf("record_data: %d\n",gcrd_ptr->record_size_in_bytes);
+       31:  233:			gcrd_ptr->type_of_record = *((char *)ptr);
+       31:  234:			ptr += 4;	
+        -:  235:            //printf("type of rec: %d\n", gcrd_ptr->type_of_record);
+        -:  236:
+        -:  237:			// amount change
+       31:  238:			if (gcrd_ptr->type_of_record == 1) {
+       11:  239:				gcac_ptr->amount_added = *((int*) ptr);
+       11:  240:				ptr += 4;	
+        -:  241:
+        -:  242:				// don't need a sig if negative
+        -:  243:				/* JAC: something seems off here */
+        -:  244:				if (gcac_ptr < 0) break;
+        -:  245:
+       11:  246:				gcac_ptr->actual_signature = ptr;
+       11:  247:				ptr+=32;
+        -:  248:			}
+        -:  249:			// message
+       31:  250:			if (gcrd_ptr->type_of_record == 2) {
+        1:  251:				gcrd_ptr->actual_record = ptr;
+        -:  252:				// advance by the string size + 1 for nul
+        -:  253:                // BDG: does not seem right
+        1:  254:				ptr=ptr+strlen((char *)gcrd_ptr->actual_record)+1;
+        -:  255:			}
+        -:  256:            // BDG: never seen one of these in the wild
+        -:  257:            // text animatino (BETA)
+       31:  258:            if (gcrd_ptr->type_of_record == 3) {
+        1:  259:                gcp_ptr->message = malloc(32);
+        1:  260:                gcp_ptr->program = malloc(256);
+        1:  261:                memcpy(gcp_ptr->message, ptr, 32);
+        1:  262:                ptr+=32;
+        1:  263:                memcpy(gcp_ptr->program, ptr, 256);
+        1:  264:                ptr+=256;
+        1:  265:                gcrd_ptr->actual_record = gcp_ptr;
+        -:  266:            }
+        -:  267:		}
+        -:  268:	}
+       10:  269:	return ret_val;
+        -:  270:}
+        -:  271:
+        -:  272:// BDG: why not a local variable here?
+        -:  273:struct this_gift_card *thisone;
+        -:  274:
+       15:  275:int main(int argc, char **argv) {
+        -:  276:	//Crash 3
+       60:  277:	for (int i=0; i<argc; i++){ //For loop for handling more than 2 command line arguments
+       45:  278:	if (i>2){
+        -:  279:	//printf("argv[%d]: %s\n", i,argv[i]);
+    #####:  280:	printf("ONLY 2 Arguments Accepted, Try Again \n");
+    #####:  281:	exit(0);
+        -:  282:		}
+        -:  283:	}
+        -:  284:    // BDG: no argument checking?
+       15:  285:	FILE *input_fd = fopen(argv[2],"r");
+       15:  286:	thisone = gift_card_reader(input_fd);
+       10:  287:	if (argv[1][0] == '1') print_gift_card_info(thisone);
+    #####:  288:    else if (argv[1][0] == '2') gift_card_json(thisone);
+        -:  289:
+       10:  290:	return 0;
+        -:  291:}

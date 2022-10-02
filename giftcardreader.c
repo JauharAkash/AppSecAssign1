@@ -54,7 +54,8 @@ void animate(char *msg, unsigned char *program) {
             case 0x08:
                 goto done;
             case 0x09:
-                pc += (unsigned char)arg1; //fixed hang.gft
+            //Hang
+                pc += (unsigned char)arg1; //Fixed hang.gft
                 break;
             case 0x10:
                 if (zf) pc += (char)arg1;
@@ -77,7 +78,10 @@ void print_gift_card_info(struct this_gift_card *thisone) {
 	printf("   Merchant ID: %32.32s\n",gcd_ptr->merchant_id);
 	printf("   Customer ID: %32.32s\n",gcd_ptr->customer_id);
 	printf("   Num records: %d\n",gcd_ptr->number_of_gift_card_records);
+	
+	
 	for(int i=0;i<gcd_ptr->number_of_gift_card_records; i++) {
+	
   		gcrd_ptr = (struct gift_card_record_data *) gcd_ptr->gift_card_record_data[i];
 		if (gcrd_ptr->type_of_record == 1) {
 			printf("      record_type: amount_change\n");
@@ -181,14 +185,13 @@ struct this_gift_card *gift_card_reader(FILE *input_fd) {
 
 	// Loop to do the whole file
 	while (!feof(input_fd)) {
-		
-		
+
 		struct gift_card_data *gcd_ptr;
 		/* JAC: Why aren't return types checked? */
 		fread(&ret_val->num_bytes, 4,1, input_fd);
-		
-		if (ret_val->num_bytes<0){ //if statement to fix crash2.gft
-		printf("Not valid, please enter a valid byte value");
+		//Crash 1 & 2
+		if (ret_val->num_bytes<0){ //if statement to fix the crashes
+		printf("Not valid, please enter a valid byte value in the giftcardwriter.c");
 		printf("\n");
 		exit(0);
 		}
@@ -210,9 +213,11 @@ struct this_gift_card *gift_card_reader(FILE *input_fd) {
 		ptr += 4;
 
 		gcd_ptr->gift_card_record_data = (void *)malloc(gcd_ptr->number_of_gift_card_records*sizeof(void*));
+		
 
 		// Now ptr points at the gift card recrod data
 		for (int i=0; i<=gcd_ptr->number_of_gift_card_records; i++){
+		
 			//printf("i: %d\n",i);
 			struct gift_card_record_data *gcrd_ptr;
 			gcrd_ptr = gcd_ptr->gift_card_record_data[i] = malloc(sizeof(struct gift_card_record_data));
@@ -268,17 +273,19 @@ struct this_gift_card *gift_card_reader(FILE *input_fd) {
 struct this_gift_card *thisone;
 
 int main(int argc, char **argv) {
+	//Crash 3
+	for (int i=0; i<argc; i++){ //For loop for handling more than 2 command line arguments
+	if (i>2){
+	//printf("argv[%d]: %s\n", i,argv[i]);
+	printf("ONLY 2 Arguments Accepted, Try Again \n");
+	exit(0);
+		}
+	}
     // BDG: no argument checking?
-    	
 	FILE *input_fd = fopen(argv[2],"r");
-	
 	thisone = gift_card_reader(input_fd);
 	if (argv[1][0] == '1') print_gift_card_info(thisone);
-   	 else if (argv[1][0] == '2') gift_card_json(thisone);
-	
+    else if (argv[1][0] == '2') gift_card_json(thisone);
+
 	return 0;
 }
-
-
-
-

@@ -10,3 +10,38 @@ crash #3 - I could generate a crash for this however, I did observe that a segme
 
 
 hang.gft - The hint provided in the assignment indeed did help in this part of the assignment. The record type field was exploit. When calling the animate function by passing the 3 in the record type parameter, I was able to see that the function goes into the while loop. The memory allocation keeps incrementing until the a value of + 256 is passed. Since char is being used to pass negative num due to the program incrementing. The program just hangs and cannot finish executing. Using an unsigned char value would be better in this situation which shall fix the issue. 
+
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+testing
+
+Part 3:
+
+The code coverage before making any changes (For Part 3) - 52.07%
+
+cov1.c - In order to cover more code, I saw that the type "2" was not being used for the record_type. So on line 39 in the cov1.c, I changed the value from 1 to 2 "examplegcrd.type_of_record = 2" to cover more code. So, this way the record_type:message is being used now. 
+
+The code coverage after making this change - 54.44% (2.37% increase)
+
+
+cov2.c - In the giftcardreader.c I saw that the animate function also had very less code coverage. The following lines in cov2.c will produce more coverage by passing the following values for each animate use case. 
+
+	unsigned char program[256] = { // using cases 1,2,3,4,6,7,8
+		0x01, (10), (12),
+		0x02, (10), (12),
+		0x04, (10), (12),
+		0x06, (10), (12),
+		0x07, 0xff, 0xff,
+		0x08, 0xff, 0xff,
+	};
+	fwrite(program, 256, 1, fd1);
+
+
+The code coverage after making this change - 60.95% (6.51% increase)
+
+
+
+
+
+
+
