@@ -11,6 +11,7 @@ jobs:
       - run: make giftcardreader
       - run: make cov1
       - run: make cov2
+      - run: make giftcardreader
       - run: gcc -g --coverage giftcardreader.c -o giftcardreader
       - run: ./giftcardreader 1 crash1.gft
       - run: ./giftcardreader 1 crash2.gft
