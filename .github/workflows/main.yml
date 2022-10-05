@@ -6,11 +6,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: make giftcardwriter_crash1
-      - run: ./giftcardreader 1 crash1.gft
+      - run: gcc -o giftcardreader giftcardreader.c && ./giftcardreader 1 crash1.gft
       - run: make giftcardwriter_crash2
-      - run: ./giftcardreader 1 crash2.gft
+      - run: gcc -o giftcardreader giftcardreader.c && ./giftcardreader 1 crash2.gft
       - run: make giftcardwriter_hang
-      - run: ./giftcardreader 1 hang.gft
+      - run: gcc -o giftcardreader giftcardreader.c && ./giftcardreader 1 hang.gft
       - run: make cov1
       - run: ./giftcardreader 1 cov1.gft 
       - run: make cov2
