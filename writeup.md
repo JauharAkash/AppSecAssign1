@@ -11,7 +11,7 @@ crash #3 - I could generate a crash for this however, I did observe that a segme
 
 hang.gft - The hint provided in the assignment indeed did help in this part of the assignment. The record type field was exploit. When calling the animate function by passing the 3 in the record type parameter, I was able to see that the function goes into the while loop. The memory allocation keeps incrementing until the a value of + 256 is passed. Since char is being used to pass negative num due to the program incrementing. The program just hangs and cannot finish executing. Using an unsigned char value would be better in this situation which shall fix the issue. 
 
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 testing
 
@@ -40,8 +40,19 @@ cov2.c - In the giftcardreader.c I saw that the animate function also had very l
 The code coverage after making this change - 60.95% (6.51% increase)
 
 
-After running the fuzzer for more than 
+After running the fuzzer for more than 15 hours. I saw several crashes and several hangs being generated. I picked a couple of them and saw only a handful of them actually crashes. 
 
+fuzzer1.gft & fuzzer2.gft - I did a lot of debugging with both of them and saw that the program was crashing since there were no checks in place for case 0x01. I observed that both these generated gft files were trying to access memory out of the range of 0 - 16. So, I put an if statement in the giftcardreader.c file on line 32 to check for arg1. After putting that if statement in place. I saw that these 2 gft files and a couple of more gft weren't crashing.
+
+
+The code coverage after making this change - 68.24% (7.29% increase)
+
+
+fuzzer3.gft - Upon trying different crash files from the fuzzer, I saw that this file crashed for case 0x04. This was the case because again there was no check in place for the arg1 and arg2 pointers. After adding the if statement on line 47 in the giftcardreader.c file, the gft file didn't crash anymore and did product the expected output. This fix is basically making sure that the arg1 and arg2 values are in the range and below 16.
+
+
+
+The code coverage after making this change - 71.18% (2.94% increase)
 
 
 
