@@ -24,4 +24,3 @@ jobs:
       - run: ./giftcardreader 1 fuzzer1.gft
       - run: ./giftcardreader 1 fuzzer2.gft
       - run: ./giftcardreader 1 fuzzer3.gft
-      - run: gcov giftcardreader
