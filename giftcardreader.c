@@ -283,7 +283,7 @@ struct this_gift_card *gift_card_reader(FILE *input_fd) {
 struct this_gift_card *thisone;
 
 int main(int argc, char **argv) {
-	//Crash 3
+	//Crash3
 	for (int i=0; i<argc; i++){ //For loop for handling more than 2 command line arguments
 	if (i>2){
 	//printf("argv[%d]: %s\n", i,argv[i]);

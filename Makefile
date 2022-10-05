@@ -15,3 +15,9 @@ giftcardwriter_crash2:
 giftcardwriter_hang:
 	gcc -o giftcardwriter_hang giftcardwriter_hang.c && ./giftcardwriter_hang
 
+cov1:
+	gcc -o cov1 cov1.c && ./cov1
+
+cov2:
+	gcc -o cov2 cov2.c && ./cov2
+
