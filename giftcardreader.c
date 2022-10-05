@@ -29,7 +29,9 @@ void animate(char *msg, unsigned char *program) {
             case 0x00:
                 break;
             case 0x01:
+            	if(arg1<16){
                 regs[arg1] = *mptr;
+                };
                 break;
             case 0x02:
                 *mptr = regs[arg1];
@@ -97,7 +99,7 @@ void print_gift_card_info(struct this_gift_card *thisone) {
 		}
 		else if (gcrd_ptr->type_of_record == 3) {
             gcp_ptr = gcrd_ptr->actual_record;
-			printf("      record_type: animated message\n");
+            printf("      record_type: animated message\n");
             printf("      message: %s\n", gcp_ptr->message);
             printf("  [running embedded program]  \n");
             animate(gcp_ptr->message, gcp_ptr->program);

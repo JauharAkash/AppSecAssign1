@@ -2,6 +2,7 @@
         -:    0:Graph:giftcardreader.gcno
         -:    0:Data:giftcardreader.gcda
         -:    0:Runs:15
+        -:    0:Source is newer than graph
         -:    1:/*
         -:    2: * Gift Card Reading Application
         -:    3: * Original Author: Shoddycorp's Cut-Rate Contracting

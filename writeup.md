@@ -40,7 +40,7 @@ cov2.c - In the giftcardreader.c I saw that the animate function also had very l
 The code coverage after making this change - 60.95% (6.51% increase)
 
 
-
+After running the fuzzer for more than 
 
 
 
